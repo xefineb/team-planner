@@ -619,31 +619,33 @@ class TeamPlanner {
     }
 
     resetData() {
-        if (confirm('WARNING: This will delete ALL teams, interactions, and value streams. Are you sure?')) {
-            if (confirm('This action cannot be undone. Really delete everything?')) {
-                this.teams = [];
-                this.interactions = [];
-                this.valueStreams = [];
-                this.saveToStorage();
+        setTimeout(() => {
+            if (confirm('WARNING: This will delete ALL teams, interactions, and value streams. Are you sure?')) {
+                if (confirm('This action cannot be undone. Really delete everything?')) {
+                    this.teams = [];
+                    this.interactions = [];
+                    this.valueStreams = [];
+                    this.saveToStorage();
 
-                // Re-init the app to clear everything
-                this.currentTeamId = null;
-                this.editingTeamId = null;
-                this.editingValueStreamId = null;
-                this.editingInteractionIndex = null;
-                this.draggedNode = null;
+                    // Re-init the app to clear everything
+                    this.currentTeamId = null;
+                    this.editingTeamId = null;
+                    this.editingValueStreamId = null;
+                    this.editingInteractionIndex = null;
+                    this.draggedNode = null;
 
-                this.render();
-                this.renderDiagram();
-                this.renderValueStreams();
+                    this.render();
+                    this.renderDiagram();
+                    this.renderValueStreams();
 
-                // Close burger menu
-                const burgerDropdown = document.getElementById('burgerDropdown');
-                if (burgerDropdown) burgerDropdown.classList.remove('active');
+                    // Close burger menu
+                    const burgerDropdown = document.getElementById('burgerDropdown');
+                    if (burgerDropdown) burgerDropdown.classList.remove('active');
 
-                this.showNotification('All data has been reset', 'success');
+                    this.showNotification('All data has been reset', 'success');
+                }
             }
-        }
+        }, 50);
     }
 
     importData(event) {
