@@ -158,14 +158,6 @@ class TeamPlanner {
             this.closeValueStreamFormModal();
         });
 
-        // Color preset selection
-        document.querySelectorAll('.color-preset').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const color = e.target.dataset.color;
-                document.getElementById('valueStreamColor').value = color;
-            });
-        });
-
         // Close value stream form modal on backdrop click
         document.getElementById('valueStreamFormModal').addEventListener('click', (e) => {
             if (e.target.id === 'valueStreamFormModal') {
@@ -458,7 +450,7 @@ class TeamPlanner {
             .map(id => this.valueStreams.find(vs => vs.id === id))
             .filter(vs => vs) // Filter out any that don't exist
             .map(vs => `
-                <span class="value-stream-tag" style="--vs-color: ${vs.color};">
+                <span class="value-stream-tag">
                     ${this.escapeHtml(vs.name)}
                 </span>
             `)
@@ -1188,7 +1180,6 @@ class TeamPlanner {
                 title.textContent = 'Edit Value Stream';
                 document.getElementById('valueStreamName').value = vs.name;
                 document.getElementById('valueStreamDescription').value = vs.description || '';
-                document.getElementById('valueStreamColor').value = vs.color;
             }
         } else {
             title.textContent = 'Add Value Stream';
@@ -1207,7 +1198,6 @@ class TeamPlanner {
     saveValueStream() {
         const name = document.getElementById('valueStreamName').value.trim();
         const description = document.getElementById('valueStreamDescription').value.trim();
-        const color = document.getElementById('valueStreamColor').value;
 
         if (!name) {
             alert('Please enter a value stream name');
@@ -1220,15 +1210,13 @@ class TeamPlanner {
             if (vs) {
                 vs.name = name;
                 vs.description = description;
-                vs.color = color;
             }
         } else {
             // Create new
             this.valueStreams.push({
                 id: this.generateId(),
                 name,
-                description,
-                color
+                description
             });
         }
 
@@ -1277,7 +1265,6 @@ class TeamPlanner {
 
         list.innerHTML = this.valueStreams.map(vs => `
             <div class="value-stream-item">
-                <div class="value-stream-color" style="background: ${vs.color};"></div>
                 <div class="value-stream-info">
                     <div class="value-stream-name">${this.escapeHtml(vs.name)}</div>
                     ${vs.description ? `<div class="value-stream-description">${this.escapeHtml(vs.description)}</div>` : ''}
