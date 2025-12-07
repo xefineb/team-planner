@@ -266,11 +266,14 @@ class TeamPlanner {
     }
 
     deleteTeam(teamId) {
-        if (confirm('Are you sure you want to delete this team?')) {
-            this.teams = this.teams.filter(t => t.id !== teamId);
-            this.saveToStorage();
-            this.render();
-        }
+        setTimeout(() => {
+            if (confirm('Are you sure you want to delete this team?')) {
+                this.teams = this.teams.filter(t => t.id !== teamId);
+                this.saveToStorage();
+                this.render();
+                this.renderDiagram(); // Also update topology view
+            }
+        }, 0);
     }
 
     // ===================================
@@ -445,6 +448,8 @@ class TeamPlanner {
         // Delete Team buttons
         document.querySelectorAll('.delete-team-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 const teamId = e.currentTarget.dataset.teamId;
                 this.deleteTeam(teamId);
             });
