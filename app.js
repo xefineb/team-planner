@@ -379,10 +379,32 @@ class TeamPlanner {
                </div>`
             : '<div class="team-role-counts"><span class="role-count-item">No members</span></div>';
 
+        // Dropdown menu (same for both views)
+        const dropdownMenu = `
+            <div class="team-card-menu">
+                <button class="team-menu-btn" data-team-id="${team.id}">⋮</button>
+                <div class="team-menu-dropdown">
+                    <button class="menu-item add-member-btn" data-team-id="${team.id}">
+                        <span class="menu-icon">+</span>
+                        Add Member
+                    </button>
+                    <button class="menu-item edit-team-btn" data-team-id="${team.id}">
+                        <span class="menu-icon">✏️</span>
+                        Edit Team
+                    </button>
+                    <button class="menu-item delete-team-btn" data-team-id="${team.id}">
+                        <span class="menu-icon">🗑️</span>
+                        Delete Team
+                    </button>
+                </div>
+            </div>
+        `;
+
         if (this.compactView) {
             // Compact view: name, description, value streams, role counts only
             return `
                 <div class="team-card team-card-compact" data-type="${team.type}" data-team-id="${team.id}">
+                    ${dropdownMenu}
                     <div class="team-card-header">
                         <h3 class="team-name">${this.escapeHtml(team.name)}</h3>
                         <span class="team-type-badge">${typeLabels[team.type]}</span>
@@ -415,6 +437,7 @@ class TeamPlanner {
 
         return `
             <div class="team-card" data-type="${team.type}" data-team-id="${team.id}">
+                ${dropdownMenu}
                 <div class="team-card-header">
                     <h3 class="team-name">${this.escapeHtml(team.name)}</h3>
                     <span class="team-type-badge">${typeLabels[team.type]}</span>
@@ -422,18 +445,6 @@ class TeamPlanner {
                 <p class="team-description">${this.escapeHtml(team.description || '')}</p>
                 ${valueStreamTags}
                 ${membersHtml}
-                <div class="team-actions">
-                    <button class="btn btn-secondary btn-small add-member-btn" data-team-id="${team.id}">
-                        <span class="btn-icon">+</span>
-                        Add Member
-                    </button>
-                    <button class="btn btn-secondary btn-small edit-team-btn" data-team-id="${team.id}">
-                        ✏️ Edit
-                    </button>
-                    <button class="btn btn-danger btn-small delete-team-btn" data-team-id="${team.id}">
-                        🗑️ Delete
-                    </button>
-                </div>
             </div>
         `;
     }
@@ -472,6 +483,31 @@ class TeamPlanner {
     }
 
     attachCardEventListeners() {
+        // Team menu buttons (three dots)
+        document.querySelectorAll('.team-menu-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const dropdown = e.currentTarget.nextElementSibling;
+
+                // Close all other dropdowns
+                document.querySelectorAll('.team-menu-dropdown.show').forEach(d => {
+                    if (d !== dropdown) d.classList.remove('show');
+                });
+
+                // Toggle this dropdown
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.team-card-menu')) {
+                document.querySelectorAll('.team-menu-dropdown.show').forEach(d => {
+                    d.classList.remove('show');
+                });
+            }
+        });
+
         // Add Member buttons
         document.querySelectorAll('.add-member-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
