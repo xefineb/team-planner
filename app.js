@@ -94,10 +94,18 @@ class TeamPlanner {
             this.importData(e);
         });
 
-        // Add Team Button
+        // Add Team Button (Main)
         document.getElementById('addTeamBtn').addEventListener('click', () => {
             this.openTeamModal();
         });
+
+        // Add Team Button (Empty State)
+        const emptyStateAddTeamBtn = document.getElementById('emptyStateAddTeamBtn');
+        if (emptyStateAddTeamBtn) {
+            emptyStateAddTeamBtn.addEventListener('click', () => {
+                this.openTeamModal();
+            });
+        }
 
         // Team Form
         document.getElementById('teamForm').addEventListener('submit', (e) => {
