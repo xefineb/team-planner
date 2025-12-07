@@ -260,8 +260,28 @@ body {
     left: 0;
     width: 100%;
     height: 4px;
-    background: var(--team-color);
     opacity: 0.8;
+}
+
+/* Team Topologies Colors for Top Border */
+.team-card[data-type="stream-aligned"]::before {
+    background: hsl(45, 90%, 55%);
+    /* Yellow */
+}
+
+.team-card[data-type="enabling"]::before {
+    background: hsl(270, 70%, 60%);
+    /* Purple */
+}
+
+.team-card[data-type="complicated-subsystem"]::before {
+    background: hsl(30, 90%, 60%);
+    /* Orange */
+}
+
+.team-card[data-type="platform"]::before {
+    background: hsl(210, 80%, 55%);
+    /* Blue */
 }
 
 .team-card:hover {
@@ -406,16 +426,37 @@ body {
 }
 
 .team-type-badge {
-    display: inline-block;
-    padding: var(--space-xs) var(--space-sm);
+    padding: 4px 12px;
     border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    background: var(--team-color);
-    color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Team Topologies Official Colors */
+.team-card[data-type="stream-aligned"] .team-type-badge {
+    background: hsla(45, 90%, 55%, 0.2);
+    color: hsl(45, 90%, 65%);
+    border: 1px solid hsl(45, 90%, 55%);
+}
+
+.team-card[data-type="enabling"] .team-type-badge {
+    background: hsla(270, 70%, 60%, 0.2);
+    color: hsl(270, 70%, 70%);
+    border: 1px solid hsl(270, 70%, 60%);
+}
+
+.team-card[data-type="complicated-subsystem"] .team-type-badge {
+    background: hsla(30, 90%, 60%, 0.2);
+    color: hsl(30, 90%, 70%);
+    border: 1px solid hsl(30, 90%, 60%);
+}
+
+.team-card[data-type="platform"] .team-type-badge {
+    background: hsla(210, 80%, 55%, 0.2);
+    color: hsl(210, 80%, 65%);
+    border: 1px solid hsl(210, 80%, 55%);
 }
 
 .team-description {

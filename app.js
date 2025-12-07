@@ -1312,12 +1312,12 @@ class TeamPlanner {
     // ===================================
     getTeamColor(type) {
         const colors = {
-            'stream-aligned': 'hsl(200, 85%, 55%)',
-            'enabling': 'hsl(150, 70%, 50%)',
-            'complicated-subsystem': 'hsl(30, 90%, 60%)',
-            'platform': 'hsl(280, 70%, 60%)'
+            'stream-aligned': 'hsl(45, 90%, 55%)',       // Yellow
+            'enabling': 'hsl(270, 70%, 60%)',            // Purple
+            'complicated-subsystem': 'hsl(30, 90%, 60%)', // Orange
+            'platform': 'hsl(210, 80%, 55%)'             // Blue
         };
-        return colors[type] || 'hsl(0, 0%, 50%)';
+        return colors[type] || 'hsl(45, 90%, 55%)';
     }
 
     getTeamTypeShort(type) {
