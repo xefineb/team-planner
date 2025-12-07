@@ -952,8 +952,11 @@ class TeamPlanner {
 
         const offsetX1 = Math.cos(angle) * (rectWidth / 2);
         const offsetY1 = Math.sin(angle) * (rectHeight / 2);
-        const offsetX2 = Math.cos(angle + Math.PI) * (rectWidth / 2);
-        const offsetY2 = Math.sin(angle + Math.PI) * (rectHeight / 2);
+
+        // Add gap for arrow head at destination
+        const arrowGap = 10;
+        const offsetX2 = Math.cos(angle + Math.PI) * ((rectWidth / 2) + arrowGap);
+        const offsetY2 = Math.sin(angle + Math.PI) * ((rectHeight / 2) + arrowGap);
 
         const x1 = fromTeam.x + offsetX1;
         const y1 = fromTeam.y + offsetY1;
