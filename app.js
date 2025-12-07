@@ -10,6 +10,7 @@ class TeamPlanner {
         this.currentTeamId = null;
         this.editingTeamId = null;
         this.editingValueStreamId = null;
+        this.editingInteractionIndex = null;
         this.currentView = 'grid';
         this.draggedNode = null;
 
@@ -37,7 +38,11 @@ class TeamPlanner {
             this.switchView('diagram');
         });
 
-        // Diagram Controls
+        document.getElementById('valueStreamsViewBtn').addEventListener('click', () => {
+            this.switchView('valueStreams');
+        });
+
+        // Topology Diagram Controls
         document.getElementById('addInteractionBtn').addEventListener('click', () => {
             this.openInteractionModal();
         });
@@ -95,13 +100,12 @@ class TeamPlanner {
             this.closeTeamModal();
         });
 
-        // Member Form
+        // Member Modal
         document.getElementById('memberForm').addEventListener('submit', (e) => {
             e.preventDefault();
             this.saveMember();
         });
 
-        // Member Modal Close
         document.getElementById('closeMemberModal').addEventListener('click', () => {
             this.closeMemberModal();
         });
@@ -128,6 +132,35 @@ class TeamPlanner {
                 this.closeInteractionModal();
             }
         });
+
+        // Value Stream Form Modal
+        document.getElementById('valueStreamForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveValueStream();
+        });
+
+        document.getElementById('closeValueStreamFormModal').addEventListener('click', () => {
+            this.closeValueStreamFormModal();
+        });
+
+        document.getElementById('cancelValueStreamBtn').addEventListener('click', () => {
+            this.closeValueStreamFormModal();
+        });
+
+        // Color preset selection
+        document.querySelectorAll('.color-preset').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const color = e.target.dataset.color;
+                document.getElementById('valueStreamColor').value = color;
+            });
+        });
+
+        // Close value stream form modal on backdrop click
+        document.getElementById('valueStreamFormModal').addEventListener('click', (e) => {
+            if (e.target.id === 'valueStreamFormModal') {
+                this.closeValueStreamFormModal();
+            }
+        });
     }
 
     // ===================================
@@ -141,16 +174,43 @@ class TeamPlanner {
 
         if (teamId) {
             const team = this.teams.find(t => t.id === teamId);
-            title.textContent = 'Edit Team';
-            document.getElementById('teamName').value = team.name;
-            document.getElementById('teamType').value = team.type;
-            document.getElementById('teamDescription').value = team.description;
+            if (team) {
+                title.textContent = 'Edit Team';
+                document.getElementById('teamName').value = team.name;
+                document.getElementById('teamType').value = team.type;
+                document.getElementById('teamDescription').value = team.description || '';
+
+                // Render value stream checkboxes and check the team's value streams
+                this.renderValueStreamCheckboxes(team.valueStreams || []);
+            }
         } else {
             title.textContent = 'Add Team';
             form.reset();
+            // Render value stream checkboxes with none selected
+            this.renderValueStreamCheckboxes([]);
         }
 
         modal.classList.add('active');
+    }
+
+    renderValueStreamCheckboxes(selectedIds = []) {
+        const container = document.getElementById('valueStreamCheckboxes');
+
+        if (this.valueStreams.length === 0) {
+            container.innerHTML = '<p style="color: var(--color-text-muted); font-size: var(--font-size-sm);">No value streams available. Create value streams first.</p>';
+            return;
+        }
+
+        container.innerHTML = this.valueStreams.map(vs => `
+            <div class="checkbox-item">
+                <input type="checkbox" 
+                       id="vs-${vs.id}" 
+                       value="${vs.id}" 
+                       ${selectedIds.includes(vs.id) ? 'checked' : ''}>
+                <div class="color-indicator" style="background: ${vs.color};"></div>
+                <label for="vs-${vs.id}">${this.escapeHtml(vs.name)}</label>
+            </div>
+        `).join('');
     }
 
     closeTeamModal() {
@@ -169,26 +229,39 @@ class TeamPlanner {
             return;
         }
 
+        // Collect selected value streams
+        const selectedValueStreams = Array.from(
+            document.querySelectorAll('#valueStreamCheckboxes input[type="checkbox"]:checked')
+        ).map(cb => cb.value);
+
+        // Enforce 4-stream limit
+        if (selectedValueStreams.length > 4) {
+            alert('A team can belong to a maximum of 4 value streams for cognitive load management.');
+            return;
+        }
+
         if (this.editingTeamId) {
-            // Edit existing team
             const team = this.teams.find(t => t.id === this.editingTeamId);
-            team.name = name;
-            team.type = type;
-            team.description = description;
+            if (team) {
+                team.name = name;
+                team.type = type;
+                team.description = description;
+                team.valueStreams = selectedValueStreams;
+            }
         } else {
-            // Create new team
-            const team = {
+            this.teams.push({
                 id: this.generateId(),
                 name,
                 type,
                 description,
+                valueStreams: selectedValueStreams,
                 members: []
-            };
-            this.teams.push(team);
+            });
         }
 
         this.saveToStorage();
         this.render();
+        this.renderDiagram();
         this.closeTeamModal();
     }
 
@@ -267,11 +340,32 @@ class TeamPlanner {
 
     renderTeamCard(team) {
         const typeLabels = {
-            'stream-aligned': 'Stream-Aligned Team',
-            'enabling': 'Enabling Team',
-            'complicated-subsystem': 'Complicated Subsystem Team',
-            'platform': 'Platform Team'
+            'stream-aligned': 'Stream-Aligned',
+            'enabling': 'Enabling',
+            'complicated-subsystem': 'Complicated Subsystem',
+            'platform': 'Platform'
         };
+
+        const membersHtml = team.members.length > 0
+            ? `<div class="team-members">
+                    <div class="team-members-title">Team Members</div>
+                    <div class="members-list">
+                        ${team.members.map(member => `
+                            <div class="member-item">
+                                <div class="member-avatar">${member.name.charAt(0).toUpperCase()}</div>
+                                <div class="member-info">
+                                    <div class="member-name">${this.escapeHtml(member.name)}</div>
+                                    <div class="member-role">${this.escapeHtml(member.role)}</div>
+                                </div>
+                                <button class="member-remove" data-team-id="${team.id}" data-member-id="${member.id}">×</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`
+            : '';
+
+        // Render value stream tags
+        const valueStreamTags = this.renderValueStreamTags(team.valueStreams || []);
 
         return `
             <div class="team-card" data-type="${team.type}" data-team-id="${team.id}">
@@ -279,19 +373,9 @@ class TeamPlanner {
                     <h3 class="team-name">${this.escapeHtml(team.name)}</h3>
                     <span class="team-type-badge">${typeLabels[team.type]}</span>
                 </div>
-                
-                <p class="team-description">${this.escapeHtml(team.description) || 'No description provided'}</p>
-                
-                <div class="team-members">
-                    <h4 class="team-members-title">Team Members (${team.members.length})</h4>
-                    <div class="members-list">
-                        ${team.members.length > 0
-                ? team.members.map(member => this.renderMember(member, team.id)).join('')
-                : '<p style="color: var(--color-text-muted); font-size: var(--font-size-sm); padding: var(--space-sm);">No members yet</p>'
-            }
-                    </div>
-                </div>
-                
+                <p class="team-description">${this.escapeHtml(team.description || '')}</p>
+                ${valueStreamTags}
+                ${membersHtml}
                 <div class="team-actions">
                     <button class="btn btn-secondary btn-small add-member-btn" data-team-id="${team.id}">
                         <span class="btn-icon">+</span>
@@ -306,6 +390,24 @@ class TeamPlanner {
                 </div>
             </div>
         `;
+    }
+
+    renderValueStreamTags(valueStreamIds) {
+        if (!valueStreamIds || valueStreamIds.length === 0) {
+            return '';
+        }
+
+        const tags = valueStreamIds
+            .map(id => this.valueStreams.find(vs => vs.id === id))
+            .filter(vs => vs) // Filter out any that don't exist
+            .map(vs => `
+                <span class="value-stream-tag" style="--vs-color: ${vs.color};">
+                    ${this.escapeHtml(vs.name)}
+                </span>
+            `)
+            .join('');
+
+        return tags ? `<div class="value-stream-tags">${tags}</div>` : '';
     }
 
     renderMember(member, teamId) {
@@ -468,16 +570,28 @@ class TeamPlanner {
     switchView(view) {
         this.currentView = view;
 
-        // Update toggle buttons
-        document.getElementById('gridViewBtn').classList.toggle('active', view === 'grid');
-        document.getElementById('diagramViewBtn').classList.toggle('active', view === 'diagram');
+        // Update buttons
+        document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
 
-        // Update view containers
-        document.getElementById('gridView').classList.toggle('active', view === 'grid');
-        document.getElementById('diagramView').classList.toggle('active', view === 'diagram');
+        // Hide all views
+        document.getElementById('gridView').classList.remove('active');
+        document.getElementById('diagramView').classList.remove('active');
+        document.getElementById('valueStreamsView').classList.remove('active');
 
-        if (view === 'diagram') {
+        // Show selected view
+        if (view === 'grid') {
+            document.getElementById('gridViewBtn').classList.add('active');
+            document.getElementById('gridView').classList.add('active');
+        } else if (view === 'diagram') {
+            document.getElementById('diagramViewBtn').classList.add('active');
+            document.getElementById('diagramView').classList.add('active');
             this.renderDiagram();
+        } else if (view === 'valueStreams') {
+            document.getElementById('valueStreamsViewBtn').classList.add('active');
+            document.getElementById('valueStreamsView').classList.add('active');
+            this.renderValueStreams();
         }
     }
 
@@ -554,12 +668,18 @@ class TeamPlanner {
         });
         const roles = Object.entries(roleCounts);
 
+        // Get value streams for this team
+        const teamValueStreams = (team.valueStreams || [])
+            .map(id => this.valueStreams.find(vs => vs.id === id))
+            .filter(vs => vs);
+
         // Rectangle dimensions
         const width = 200;
         const headerHeight = 50;
         const roleHeight = 20;
         const padding = 10;
-        const totalHeight = headerHeight + (roles.length > 0 ? roles.length * roleHeight + padding : 20);
+        const vsHeight = teamValueStreams.length > 0 ? 25 : 0; // Space for value stream indicators
+        const totalHeight = headerHeight + (roles.length > 0 ? roles.length * roleHeight + padding : 20) + vsHeight;
 
         // Background rectangle
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -639,6 +759,33 @@ class TeamPlanner {
             g.appendChild(noMembersText);
         }
 
+        // Value stream indicators (small colored circles)
+        if (teamValueStreams.length > 0) {
+            const circleRadius = 6;
+            const circleSpacing = 16;
+            const totalWidth = teamValueStreams.length * circleSpacing - 4;
+            const startX = -totalWidth / 2;
+            const yPos = totalHeight / 2 - 15;
+
+            teamValueStreams.forEach((vs, index) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.classList.add('vs-indicator');
+                circle.setAttribute('cx', startX + (index * circleSpacing));
+                circle.setAttribute('cy', yPos);
+                circle.setAttribute('r', circleRadius);
+                circle.setAttribute('fill', vs.color);
+                circle.setAttribute('stroke', 'var(--color-bg-card)');
+                circle.setAttribute('stroke-width', '2');
+
+                // Add title for tooltip
+                const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.textContent = vs.name;
+                circle.appendChild(title);
+
+                g.appendChild(circle);
+            });
+        }
+
         // Add drag behavior
         this.addDragBehavior(g, team);
 
@@ -654,38 +801,25 @@ class TeamPlanner {
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         g.classList.add('interaction-group');
 
-        // Rectangle dimensions (must match drawTeamNode)
-        const rectWidth = 200;
-        const rectHalfWidth = rectWidth / 2;
-
-        // Calculate connection points on rectangle edges
+        // Calculate line endpoints (from edge of rectangles)
         const dx = toTeam.x - fromTeam.x;
         const dy = toTeam.y - fromTeam.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Determine which edge to connect to based on angle
-        let x1, y1, x2, y2;
+        // Approximate rectangle edge intersection
+        const angle = Math.atan2(dy, dx);
+        const rectWidth = 200;
+        const rectHeight = 100; // Approximate
 
-        // From team connection point
-        if (Math.abs(dx) > Math.abs(dy)) {
-            // Connect to left or right edge
-            x1 = fromTeam.x + (dx > 0 ? rectHalfWidth : -rectHalfWidth);
-            y1 = fromTeam.y;
-        } else {
-            // Connect to top or bottom edge
-            x1 = fromTeam.x;
-            y1 = fromTeam.y + (dy > 0 ? 40 : -40); // Approximate half-height
-        }
+        const offsetX1 = Math.cos(angle) * (rectWidth / 2);
+        const offsetY1 = Math.sin(angle) * (rectHeight / 2);
+        const offsetX2 = Math.cos(angle + Math.PI) * (rectWidth / 2);
+        const offsetY2 = Math.sin(angle + Math.PI) * (rectHeight / 2);
 
-        // To team connection point
-        if (Math.abs(dx) > Math.abs(dy)) {
-            // Connect to left or right edge
-            x2 = toTeam.x + (dx > 0 ? -rectHalfWidth : rectHalfWidth);
-            y2 = toTeam.y;
-        } else {
-            // Connect to top or bottom edge
-            x2 = toTeam.x;
-            y2 = toTeam.y + (dy > 0 ? -40 : 40); // Approximate half-height
-        }
+        const x1 = fromTeam.x + offsetX1;
+        const y1 = fromTeam.y + offsetY1;
+        const x2 = toTeam.x + offsetX2;
+        const y2 = toTeam.y + offsetY2;
 
         // Draw line
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -704,15 +838,61 @@ class TeamPlanner {
         const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         label.classList.add('interaction-label');
         label.setAttribute('x', midX);
-        label.setAttribute('y', midY - 5);
+        label.setAttribute('y', midY - 15);
         label.setAttribute('text-anchor', 'middle');
         label.textContent = this.getInteractionLabel(interaction.type);
         g.appendChild(label);
 
+        // Edit button
+        const editBtn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        editBtn.classList.add('interaction-edit');
+        editBtn.setAttribute('transform', `translate(${midX - 30}, ${midY + 10})`);
+        editBtn.style.cursor = 'pointer';
+
+        const editCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        editCircle.setAttribute('r', '10');
+        editBtn.appendChild(editCircle);
+
+        const editText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        editText.setAttribute('text-anchor', 'middle');
+        editText.setAttribute('y', '4');
+        editText.textContent = '✏';
+        editText.style.fontSize = '12px';
+        editBtn.appendChild(editText);
+
+        editBtn.addEventListener('click', () => {
+            this.editInteraction(index);
+        });
+
+        g.appendChild(editBtn);
+
+        // Swap button (reverse direction)
+        const swapBtn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        swapBtn.classList.add('interaction-swap');
+        swapBtn.setAttribute('transform', `translate(${midX}, ${midY + 10})`);
+        swapBtn.style.cursor = 'pointer';
+
+        const swapCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        swapCircle.setAttribute('r', '10');
+        swapBtn.appendChild(swapCircle);
+
+        const swapText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        swapText.setAttribute('text-anchor', 'middle');
+        swapText.setAttribute('y', '4');
+        swapText.textContent = '⇄';
+        swapText.style.fontSize = '14px';
+        swapBtn.appendChild(swapText);
+
+        swapBtn.addEventListener('click', () => {
+            this.swapInteraction(index);
+        });
+
+        g.appendChild(swapBtn);
+
         // Delete button
         const deleteBtn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         deleteBtn.classList.add('interaction-delete');
-        deleteBtn.setAttribute('transform', `translate(${midX}, ${midY + 10})`);
+        deleteBtn.setAttribute('transform', `translate(${midX + 30}, ${midY + 10})`);
         deleteBtn.style.cursor = 'pointer';
 
         const deleteCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -776,31 +956,35 @@ class TeamPlanner {
     // ===================================
     // Interaction Management
     // ===================================
-    openInteractionModal() {
-        if (this.teams.length < 2) {
-            alert('You need at least 2 teams to create an interaction');
-            return;
-        }
-
+    openInteractionModal(interactionIndex = null) {
+        this.editingInteractionIndex = interactionIndex;
         const modal = document.getElementById('interactionModal');
         const fromSelect = document.getElementById('fromTeam');
         const toSelect = document.getElementById('toTeam');
+        const typeSelect = document.getElementById('interactionType');
 
         // Populate team dropdowns
-        fromSelect.innerHTML = '<option value="">Select team...</option>';
-        toSelect.innerHTML = '<option value="">Select team...</option>';
+        const teamOptions = this.teams.map(team =>
+            `<option value="${team.id}">${this.escapeHtml(team.name)}</option>`
+        ).join('');
 
-        this.teams.forEach(team => {
-            const option1 = document.createElement('option');
-            option1.value = team.id;
-            option1.textContent = team.name;
-            fromSelect.appendChild(option1);
+        fromSelect.innerHTML = '<option value="">Select team...</option>' + teamOptions;
+        toSelect.innerHTML = '<option value="">Select team...</option>' + teamOptions;
 
-            const option2 = document.createElement('option');
-            option2.value = team.id;
-            option2.textContent = team.name;
-            toSelect.appendChild(option2);
-        });
+        // If editing, populate with existing values
+        if (interactionIndex !== null) {
+            const interaction = this.interactions[interactionIndex];
+            if (interaction) {
+                fromSelect.value = interaction.from;
+                toSelect.value = interaction.to;
+                typeSelect.value = interaction.type;
+            }
+        } else {
+            // Reset for new interaction
+            fromSelect.value = '';
+            toSelect.value = '';
+            typeSelect.value = '';
+        }
 
         modal.classList.add('active');
     }
@@ -821,25 +1005,50 @@ class TeamPlanner {
         }
 
         if (from === to) {
-            alert('A team cannot interact with itself');
+            alert('A team cannot have an interaction with itself');
             return;
         }
 
-        // Check for duplicate
-        const exists = this.interactions.some(i =>
-            i.from === from && i.to === to
-        );
+        if (this.editingInteractionIndex !== null) {
+            // Update existing interaction
+            this.interactions[this.editingInteractionIndex] = { from, to, type };
+            this.editingInteractionIndex = null;
+        } else {
+            // Check for duplicates (only for new interactions)
+            const exists = this.interactions.some(i =>
+                i.from === from && i.to === to
+            );
 
-        if (exists) {
-            alert('An interaction already exists between these teams');
-            return;
+            if (exists) {
+                alert('An interaction already exists between these teams');
+                return;
+            }
+
+            this.interactions.push({ from, to, type });
         }
 
-        this.interactions.push({ from, to, type });
         this.saveToStorage();
         this.renderDiagram();
         this.closeInteractionModal();
-        this.showNotification('Interaction added successfully!', 'success');
+        this.showNotification('Interaction saved successfully!', 'success');
+    }
+
+    editInteraction(index) {
+        this.openInteractionModal(index);
+    }
+
+    swapInteraction(index) {
+        const interaction = this.interactions[index];
+        if (interaction) {
+            // Swap from and to
+            const temp = interaction.from;
+            interaction.from = interaction.to;
+            interaction.to = temp;
+
+            this.saveToStorage();
+            this.renderDiagram();
+            this.showNotification('Interaction direction reversed!', 'success');
+        }
     }
 
     deleteInteraction(index) {
@@ -860,10 +1069,143 @@ class TeamPlanner {
             team.x = centerX + radius * Math.cos(angle);
             team.y = centerY + radius * Math.sin(angle);
         });
-
         this.saveToStorage();
         this.renderDiagram();
         this.showNotification('Layout updated!', 'success');
+    }
+
+    // ===================================
+    // Value Stream Management
+    // ===================================
+    openValueStreamFormModal(valueStreamId = null) {
+        this.editingValueStreamId = valueStreamId;
+        const modal = document.getElementById('valueStreamFormModal');
+        const form = document.getElementById('valueStreamForm');
+        const title = document.getElementById('valueStreamFormTitle');
+
+        if (valueStreamId) {
+            const vs = this.valueStreams.find(v => v.id === valueStreamId);
+            if (vs) {
+                title.textContent = 'Edit Value Stream';
+                document.getElementById('valueStreamName').value = vs.name;
+                document.getElementById('valueStreamDescription').value = vs.description || '';
+                document.getElementById('valueStreamColor').value = vs.color;
+            }
+        } else {
+            title.textContent = 'Add Value Stream';
+            form.reset();
+        }
+
+        modal.classList.add('active');
+    }
+
+    closeValueStreamFormModal() {
+        document.getElementById('valueStreamFormModal').classList.remove('active');
+        document.getElementById('valueStreamForm').reset();
+        this.editingValueStreamId = null;
+    }
+
+    saveValueStream() {
+        const name = document.getElementById('valueStreamName').value.trim();
+        const description = document.getElementById('valueStreamDescription').value.trim();
+        const color = document.getElementById('valueStreamColor').value;
+
+        if (!name) {
+            alert('Please enter a value stream name');
+            return;
+        }
+
+        if (this.editingValueStreamId) {
+            // Edit existing
+            const vs = this.valueStreams.find(v => v.id === this.editingValueStreamId);
+            if (vs) {
+                vs.name = name;
+                vs.description = description;
+                vs.color = color;
+            }
+        } else {
+            // Create new
+            this.valueStreams.push({
+                id: this.generateId(),
+                name,
+                description,
+                color
+            });
+        }
+
+        this.saveToStorage();
+        this.renderValueStreams();
+        this.closeValueStreamFormModal();
+        this.showNotification('Value stream saved successfully!', 'success');
+    }
+
+    deleteValueStream(id) {
+        const vs = this.valueStreams.find(v => v.id === id);
+        if (!vs) return;
+
+        if (!confirm(`Delete "${vs.name}"? This will remove it from all teams.`)) {
+            return;
+        }
+
+        // Remove from value streams array
+        this.valueStreams = this.valueStreams.filter(v => v.id !== id);
+
+        // Remove from all teams
+        this.teams.forEach(team => {
+            if (team.valueStreams) {
+                team.valueStreams = team.valueStreams.filter(vsId => vsId !== id);
+            }
+        });
+
+        this.saveToStorage();
+        this.renderValueStreams();
+        this.render();
+        this.showNotification('Value stream deleted', 'success');
+    }
+
+    renderValueStreams() {
+        const list = document.getElementById('valueStreamList');
+        const emptyState = document.getElementById('valueStreamEmptyState');
+
+        if (this.valueStreams.length === 0) {
+            list.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        list.style.display = 'flex';
+        emptyState.style.display = 'none';
+
+        list.innerHTML = this.valueStreams.map(vs => `
+            <div class="value-stream-item">
+                <div class="value-stream-color" style="background: ${vs.color};"></div>
+                <div class="value-stream-info">
+                    <div class="value-stream-name">${this.escapeHtml(vs.name)}</div>
+                    ${vs.description ? `<div class="value-stream-description">${this.escapeHtml(vs.description)}</div>` : ''}
+                </div>
+                <div class="value-stream-actions">
+                    <button class="btn btn-secondary vs-edit-btn" data-vs-id="${vs.id}">
+                        Edit
+                    </button>
+                    <button class="btn btn-danger vs-delete-btn" data-vs-id="${vs.id}">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        // Add event listeners to the dynamically created buttons
+        list.querySelectorAll('.vs-edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.openValueStreamFormModal(btn.dataset.vsId);
+            });
+        });
+
+        list.querySelectorAll('.vs-delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.deleteValueStream(btn.dataset.vsId);
+            });
+        });
     }
 
     // ===================================
@@ -918,7 +1260,8 @@ class TeamPlanner {
     saveToStorage() {
         const data = {
             teams: this.teams,
-            interactions: this.interactions
+            interactions: this.interactions,
+            valueStreams: this.valueStreams
         };
         localStorage.setItem('teamPlannerData', JSON.stringify(data));
     }
@@ -932,14 +1275,17 @@ class TeamPlanner {
                 if (Array.isArray(data)) {
                     this.teams = data;
                     this.interactions = [];
+                    this.valueStreams = [];
                 } else {
                     this.teams = data.teams || [];
                     this.interactions = data.interactions || [];
+                    this.valueStreams = data.valueStreams || [];
                 }
             } catch (e) {
                 console.error('Failed to load data from storage', e);
                 this.teams = [];
                 this.interactions = [];
+                this.valueStreams = [];
             }
         }
     }
@@ -968,6 +1314,7 @@ class TeamPlanner {
 }
 
 // Initialize the application
+let app;
 document.addEventListener('DOMContentLoaded', () => {
-    new TeamPlanner();
+    app = new TeamPlanner();
 });

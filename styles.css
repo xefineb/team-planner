@@ -841,8 +841,62 @@ form {
     transition: opacity var(--transition-fast);
 }
 
-.interaction-group:hover .interaction-delete {
+.interaction-edit {
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.interaction-swap {
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.interaction-group:hover .interaction-delete,
+.interaction-group:hover .interaction-edit,
+.interaction-group:hover .interaction-swap {
     opacity: 1;
+}
+
+.interaction-edit circle {
+    fill: var(--color-bg-card);
+    stroke: var(--color-primary);
+    stroke-width: 2;
+}
+
+.interaction-edit text {
+    fill: var(--color-primary);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.interaction-edit:hover circle {
+    fill: var(--color-primary);
+}
+
+.interaction-edit:hover text {
+    fill: white;
+}
+
+.interaction-swap circle {
+    fill: var(--color-bg-card);
+    stroke: hsl(35, 85%, 55%);
+    stroke-width: 2;
+}
+
+.interaction-swap text {
+    fill: hsl(35, 85%, 55%);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.interaction-swap:hover circle {
+    fill: hsl(35, 85%, 55%);
+}
+
+.interaction-swap:hover text {
+    fill: white;
 }
 
 .interaction-delete circle {
@@ -1040,6 +1094,22 @@ form {
 .color-preset:hover {
     transform: scale(1.1);
     border-color: var(--color-border-light);
+}
+
+/* Value Streams View */
+.value-streams-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.value-streams-header h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    margin: 0;
 }
 
 /* ===================================

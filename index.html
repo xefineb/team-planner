@@ -27,10 +27,6 @@
         <main class="main-content">
             <div class="container">
                 <div class="controls">
-                    <button id="manageValueStreamsBtn" class="btn btn-secondary">
-                        <span class="btn-icon">🎯</span>
-                        Manage Value Streams
-                    </button>
                     <button id="importBtn" class="btn btn-secondary">
                         <span class="btn-icon">📥</span>
                         Import
@@ -54,6 +50,10 @@
                     <button id="diagramViewBtn" class="view-toggle-btn">
                         <span class="btn-icon">⚡</span>
                         Topology View
+                    </button>
+                    <button id="valueStreamsViewBtn" class="view-toggle-btn">
+                        <span class="btn-icon">🎯</span>
+                        Value Streams
                     </button>
                 </div>
 
@@ -89,6 +89,24 @@
                         <div class="empty-state-icon">📊</div>
                         <h2>No teams to visualize</h2>
                         <p>Create teams to see them in the topology diagram</p>
+                    </div>
+                </div>
+
+                <div id="valueStreamsView" class="view-container">
+                    <div class="value-streams-header">
+                        <h2>Value Streams & Domain Boundaries</h2>
+                        <button id="addValueStreamBtn" class="btn btn-primary">
+                            <span class="btn-icon">+</span>
+                            Add Value Stream
+                        </button>
+                    </div>
+                    <div class="value-stream-list" id="valueStreamList">
+                        <!-- Value streams will be rendered here -->
+                    </div>
+                    <div id="valueStreamEmptyState" class="empty-state">
+                        <div class="empty-state-icon">🎯</div>
+                        <h2>No value streams yet</h2>
+                        <p>Create your first value stream to organize teams by domain boundaries</p>
                     </div>
                 </div>
             </div>
@@ -225,33 +243,6 @@
                     <button type="submit" class="btn btn-primary">Add Interaction</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Value Stream Management Modal -->
-    <div id="valueStreamModal" class="modal">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2>Manage Value Streams</h2>
-                <button class="modal-close" id="closeValueStreamModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="value-stream-list" id="valueStreamList">
-                    <!-- Value streams will be rendered here -->
-                </div>
-                <div class="empty-state" id="valueStreamEmptyState">
-                    <div class="empty-state-icon">🎯</div>
-                    <h3>No value streams yet</h3>
-                    <p>Create your first value stream to organize teams</p>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-primary" id="addValueStreamBtn">
-                    <span class="btn-icon">+</span>
-                    Add Value Stream
-                </button>
-                <button type="button" class="btn btn-secondary" id="closeValueStreamModalBtn">Close</button>
-            </div>
         </div>
     </div>
 
