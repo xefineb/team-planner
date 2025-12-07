@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Visual team planning tool using Team Topologies framework">
+    <title>Team Planner - Organize Your Teams</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="app">
+        <header class="app-header">
+            <div class="container">
+                <h1 class="app-title">
+                    <span class="title-icon">🎯</span>
+                    Team Planner
+                </h1>
+                <p class="app-subtitle">Organize your teams with Team Topologies</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="controls">
+                    <button id="manageValueStreamsBtn" class="btn btn-secondary">
+                        <span class="btn-icon">🎯</span>
+                        Manage Value Streams
+                    </button>
+                    <button id="importBtn" class="btn btn-secondary">
+                        <span class="btn-icon">📥</span>
+                        Import
+                    </button>
+                    <button id="exportBtn" class="btn btn-secondary">
+                        <span class="btn-icon">📤</span>
+                        Export
+                    </button>
+                    <button id="addTeamBtn" class="btn btn-primary">
+                        <span class="btn-icon">+</span>
+                        Add Team
+                    </button>
+                    <input type="file" id="importFile" accept=".team,.json" style="display: none;">
+                </div>
+
+                <div class="view-toggle">
+                    <button id="gridViewBtn" class="view-toggle-btn active">
+                        <span class="btn-icon">▦</span>
+                        Grid View
+                    </button>
+                    <button id="diagramViewBtn" class="view-toggle-btn">
+                        <span class="btn-icon">⚡</span>
+                        Topology View
+                    </button>
+                </div>
+
+                <div id="gridView" class="view-container active">
+                    <div id="teamsGrid" class="teams-grid">
+                        <!-- Teams will be rendered here -->
+                    </div>
+
+                    <div id="emptyState" class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h2>No teams yet</h2>
+                        <p>Create your first team to get started</p>
+                    </div>
+                </div>
+
+                <div id="diagramView" class="view-container">
+                    <div class="diagram-controls">
+                        <button id="addInteractionBtn" class="btn btn-secondary btn-small">
+                            <span class="btn-icon">🔗</span>
+                            Add Interaction
+                        </button>
+                        <button id="autoLayoutBtn" class="btn btn-secondary btn-small">
+                            <span class="btn-icon">⚙️</span>
+                            Auto Layout
+                        </button>
+                    </div>
+                    <div id="topologyDiagram" class="topology-diagram">
+                        <svg id="diagramSvg" width="100%" height="600">
+                            <!-- Diagram will be rendered here -->
+                        </svg>
+                    </div>
+                    <div id="diagramEmptyState" class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h2>No teams to visualize</h2>
+                        <p>Create teams to see them in the topology diagram</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Team Modal -->
+    <div id="teamModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Team</h2>
+                <button class="modal-close" id="closeTeamModal">&times;</button>
+            </div>
+            <form id="teamForm">
+                <div class="form-group">
+                    <label for="teamName">Team Name</label>
+                    <input type="text" id="teamName" required placeholder="e.g., Mobile Platform Team">
+                </div>
+
+                <div class="form-group">
+                    <label for="teamType">Team Topology Type</label>
+                    <select id="teamType" required>
+                        <option value="">Select a type...</option>
+                        <option value="stream-aligned">Stream-Aligned Team</option>
+                        <option value="enabling">Enabling Team</option>
+                        <option value="complicated-subsystem">Complicated Subsystem Team</option>
+                        <option value="platform">Platform Team</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="teamDescription">Description</label>
+                    <textarea id="teamDescription" rows="4"
+                        placeholder="Describe the team's purpose and responsibilities..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Value Streams / Domain Boundaries</label>
+                    <div id="valueStreamCheckboxes" class="checkbox-group">
+                        <!-- Value stream checkboxes will be rendered here -->
+                    </div>
+                    <small class="form-help">Select up to 4 value streams this team belongs to</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelTeamBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Team</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member Modal -->
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Team Member</h2>
+                <button class="modal-close" id="closeMemberModal">&times;</button>
+            </div>
+            <form id="memberForm">
+                <div class="form-group">
+                    <label for="memberName">Member Name</label>
+                    <input type="text" id="memberName" required placeholder="e.g., Sarah Johnson">
+                </div>
+
+                <div class="form-group">
+                    <label for="memberRole">Role</label>
+                    <input type="text" id="memberRole" required placeholder="e.g., Software Engineer, Product Manager"
+                        list="rolesSuggestions">
+                    <datalist id="rolesSuggestions">
+                        <option value="Software Engineer">
+                        <option value="Senior Software Engineer">
+                        <option value="Tech Lead">
+                        <option value="Engineering Manager">
+                        <option value="Product Manager">
+                        <option value="Product Designer">
+                        <option value="UX Designer">
+                        <option value="UI Designer">
+                        <option value="DevOps Engineer">
+                        <option value="QA Engineer">
+                        <option value="Data Engineer">
+                        <option value="Data Scientist">
+                        <option value="Architect">
+                    </datalist>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelMemberBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Interaction Modal -->
+    <div id="interactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Team Interaction</h2>
+                <button class="modal-close" id="closeInteractionModal">&times;</button>
+            </div>
+            <form id="interactionForm">
+                <div class="form-group">
+                    <label for="fromTeam">From Team</label>
+                    <select id="fromTeam" required>
+                        <option value="">Select team...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="interactionType">Interaction Type</label>
+                    <select id="interactionType" required>
+                        <option value="">Select type...</option>
+                        <option value="collaboration">Collaboration</option>
+                        <option value="x-as-a-service">X-as-a-Service</option>
+                        <option value="facilitation">Facilitation</option>
+                    </select>
+                    <small class="form-help">
+                        • <strong>Collaboration:</strong> Teams work closely together<br>
+                        • <strong>X-as-a-Service:</strong> One team provides a service<br>
+                        • <strong>Facilitation:</strong> Enabling team helps another team
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="toTeam">To Team</label>
+                    <select id="toTeam" required>
+                        <option value="">Select team...</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelInteractionBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Interaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Value Stream Management Modal -->
+    <div id="valueStreamModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Manage Value Streams</h2>
+                <button class="modal-close" id="closeValueStreamModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="value-stream-list" id="valueStreamList">
+                    <!-- Value streams will be rendered here -->
+                </div>
+                <div class="empty-state" id="valueStreamEmptyState">
+                    <div class="empty-state-icon">🎯</div>
+                    <h3>No value streams yet</h3>
+                    <p>Create your first value stream to organize teams</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-primary" id="addValueStreamBtn">
+                    <span class="btn-icon">+</span>
+                    Add Value Stream
+                </button>
+                <button type="button" class="btn btn-secondary" id="closeValueStreamModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Value Stream Form Modal -->
+    <div id="valueStreamFormModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="valueStreamFormTitle">Add Value Stream</h2>
+                <button class="modal-close" id="closeValueStreamFormModal">&times;</button>
+            </div>
+            <form id="valueStreamForm">
+                <div class="form-group">
+                    <label for="valueStreamName">Name</label>
+                    <input type="text" id="valueStreamName" required placeholder="e.g., E-Commerce Platform">
+                </div>
+
+                <div class="form-group">
+                    <label for="valueStreamDescription">Description</label>
+                    <textarea id="valueStreamDescription" rows="3"
+                        placeholder="Describe this value stream or domain boundary..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="valueStreamColor">Color</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="valueStreamColor" value="#4A90E2">
+                        <div class="color-presets">
+                            <button type="button" class="color-preset" data-color="#4A90E2"
+                                style="background: #4A90E2;"></button>
+                            <button type="button" class="color-preset" data-color="#50C878"
+                                style="background: #50C878;"></button>
+                            <button type="button" class="color-preset" data-color="#9B59B6"
+                                style="background: #9B59B6;"></button>
+                            <button type="button" class="color-preset" data-color="#E74C3C"
+                                style="background: #E74C3C;"></button>
+                            <button type="button" class="color-preset" data-color="#F39C12"
+                                style="background: #F39C12;"></button>
+                            <button type="button" class="color-preset" data-color="#1ABC9C"
+                                style="background: #1ABC9C;"></button>
+                            <button type="button" class="color-preset" data-color="#E91E63"
+                                style="background: #E91E63;"></button>
+                            <button type="button" class="color-preset" data-color="#FF5722"
+                                style="background: #FF5722;"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelValueStreamBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Value Stream</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
