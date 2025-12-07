@@ -551,7 +551,8 @@ class TeamPlanner {
     exportData() {
         const data = {
             teams: this.teams,
-            interactions: this.interactions
+            interactions: this.interactions,
+            valueStreams: this.valueStreams
         };
         const dataStr = JSON.stringify(data, null, 2);
         // Use text/plain to avoid browser issues with custom extensions
@@ -593,13 +594,15 @@ class TeamPlanner {
                 const imported = JSON.parse(e.target.result);
 
                 // Handle both old format (array) and new format (object)
-                let importedTeams, importedInteractions;
+                let importedTeams, importedInteractions, importedValueStreams;
                 if (Array.isArray(imported)) {
                     importedTeams = imported;
                     importedInteractions = [];
+                    importedValueStreams = [];
                 } else {
                     importedTeams = imported.teams || [];
                     importedInteractions = imported.interactions || [];
+                    importedValueStreams = imported.valueStreams || [];
                 }
 
                 // Validate the data structure
@@ -615,6 +618,7 @@ class TeamPlanner {
 
                 this.teams = importedTeams;
                 this.interactions = importedInteractions;
+                this.valueStreams = importedValueStreams;
                 this.saveToStorage();
                 this.render();
                 this.renderDiagram();
