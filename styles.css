@@ -234,6 +234,11 @@ body {
     background: rgba(124, 58, 237, 0.2);
 }
 
+.menu-item.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-error);
+}
+
 .menu-divider {
     height: 1px;
     background: var(--color-border);

@@ -81,6 +81,14 @@ class TeamPlanner {
             document.getElementById('importFile').click();
         });
 
+        // Reset Data Button (New)
+        const resetDataBtn = document.getElementById('resetDataBtn');
+        if (resetDataBtn) {
+            resetDataBtn.addEventListener('click', () => {
+                this.resetData();
+            });
+        }
+
         // Import File Input
         document.getElementById('importFile').addEventListener('change', (e) => {
             this.importData(e);
@@ -608,6 +616,34 @@ class TeamPlanner {
 
         // Show success message
         this.showNotification('Teams exported successfully!', 'success');
+    }
+
+    resetData() {
+        if (confirm('WARNING: This will delete ALL teams, interactions, and value streams. Are you sure?')) {
+            if (confirm('This action cannot be undone. Really delete everything?')) {
+                this.teams = [];
+                this.interactions = [];
+                this.valueStreams = [];
+                this.saveToStorage();
+
+                // Re-init the app to clear everything
+                this.currentTeamId = null;
+                this.editingTeamId = null;
+                this.editingValueStreamId = null;
+                this.editingInteractionIndex = null;
+                this.draggedNode = null;
+
+                this.render();
+                this.renderDiagram();
+                this.renderValueStreams();
+
+                // Close burger menu
+                const burgerDropdown = document.getElementById('burgerDropdown');
+                if (burgerDropdown) burgerDropdown.classList.remove('active');
+
+                this.showNotification('All data has been reset', 'success');
+            }
+        }
     }
 
     importData(event) {
