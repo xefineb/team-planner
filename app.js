@@ -859,30 +859,27 @@ class TeamPlanner {
             g.appendChild(noMembersText);
         }
 
-        // Value stream indicators (small colored circles)
-        if (teamValueStreams.length > 0) {
-            const circleRadius = 6;
-            const circleSpacing = 16;
-            const totalWidth = teamValueStreams.length * circleSpacing - 4;
-            const startX = -totalWidth / 2;
-            const yPos = totalHeight / 2 - 15;
+        // Value stream indicators (icons instead of circles)
+        if (team.valueStreams && team.valueStreams.length > 0) {
+            const validStreams = team.valueStreams
+                .map(vsId => this.valueStreams.find(vs => vs.id === vsId))
+                .filter(vs => vs && vs.icon); // Only show if icon exists
 
-            teamValueStreams.forEach((vs, index) => {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.classList.add('vs-indicator');
-                circle.setAttribute('cx', startX + (index * circleSpacing));
-                circle.setAttribute('cy', yPos);
-                circle.setAttribute('r', circleRadius);
-                circle.setAttribute('fill', vs.color);
-                circle.setAttribute('stroke', 'var(--color-bg-card)');
-                circle.setAttribute('stroke-width', '2');
+            validStreams.forEach((vs, index) => {
+                const iconText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                iconText.setAttribute('x', -90 + (index * 25));
+                iconText.setAttribute('y', 55);
+                iconText.setAttribute('font-size', '18');
+                iconText.setAttribute('text-anchor', 'middle');
+                iconText.textContent = vs.icon;
+                iconText.style.cursor = 'default';
 
-                // Add title for tooltip
+                // Tooltip
                 const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
                 title.textContent = vs.name;
-                circle.appendChild(title);
+                iconText.appendChild(title);
 
-                g.appendChild(circle);
+                g.appendChild(iconText);
             });
         }
 
