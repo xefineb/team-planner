@@ -15,106 +15,116 @@
 <body>
     <div id="app">
         <header class="app-header">
-            <div class="container">
-                <h1 class="app-title">
-                    <span class="title-icon">🎯</span>
-                    Team Planner
-                </h1>
-                <p class="app-subtitle">Organize your teams with Team Topologies</p>
-            </div>
-        </header>
+            <div class="container header-content">
+                <div class="title-group">
+                    <h1 class="app-title">
+                        <span class="title-icon">🎯</span>
+                        Team Planner
+                    </h1>
+                    <p class="app-subtitle">Organize your teams with Team Topologies</p>
+                </div>
 
-        <main class="main-content">
-            <div class="container">
-                <div class="controls">
-                    <button id="toggleCompactViewBtn" class="btn btn-secondary">
-                        <span class="btn-icon">⊟</span>
-                        Compact View
+                <div class="burger-menu-container">
+                    <button id="burgerBtn" class="burger-btn" aria-label="Menu">
+                        <span class="burger-icon">☰</span>
                     </button>
-                    <button id="importBtn" class="btn btn-secondary">
-                        <span class="btn-icon">📥</span>
-                        Import
+                    <div id="burgerDropdown" class="burger-dropdown">
+                        <button id="addTeamBtn" class="menu-item primary">
+                            <span class="btn-icon">+</span> Add Team
+                        </button>
+                        <div class="menu-divider"></div>
+                        <button id="importBtn" class="menu-item">
+                            <span class="btn-icon">📥</span> Import
+                        </button>
+                        <button id="exportBtn" class="menu-item">
+                            <span class="btn-icon">📤</span> Export
+                        </button>
+                        <div class="menu-divider"></div>
+                        <button id="toggleCompactViewBtn" class="menu-item">
+                            <span class="btn-icon">⊟</span> Compact View
+                        </button>
+                        <input type="file" id="importFile" accept=".team,.json" style="display: none;">
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <div class="container header-tabs">
+        <div class="view-toggle">
+            <button id="gridViewBtn" class="view-toggle-btn active">
+                <span class="btn-icon">▦</span>
+                Grid View
+            </button>
+            <button id="diagramViewBtn" class="view-toggle-btn">
+                <span class="btn-icon">⚡</span>
+                Topology View
+            </button>
+            <button id="valueStreamsViewBtn" class="view-toggle-btn">
+                <span class="btn-icon">🎯</span>
+                Value Streams
+            </button>
+        </div>
+    </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Controls moved to burger menu -->
+
+            <div id="gridView" class="view-container active">
+                <div id="teamsGrid" class="teams-grid">
+                    <!-- Teams will be rendered here -->
+                </div>
+
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h2>No teams yet</h2>
+                    <p>Create your first team to get started</p>
+                </div>
+            </div>
+
+            <div id="diagramView" class="view-container">
+                <div class="diagram-controls">
+                    <button id="addInteractionBtn" class="btn btn-secondary btn-small">
+                        <span class="btn-icon">🔗</span>
+                        Add Interaction
                     </button>
-                    <button id="exportBtn" class="btn btn-secondary">
-                        <span class="btn-icon">📤</span>
-                        Export
+                    <button id="autoLayoutBtn" class="btn btn-secondary btn-small">
+                        <span class="btn-icon">⚙️</span>
+                        Auto Layout
                     </button>
-                    <button id="addTeamBtn" class="btn btn-primary">
+                </div>
+                <div id="topologyDiagram" class="topology-diagram">
+                    <svg id="diagramSvg" width="100%" height="600">
+                        <!-- Diagram will be rendered here -->
+                    </svg>
+                </div>
+                <div id="diagramEmptyState" class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <h2>No teams to visualize</h2>
+                    <p>Create teams to see them in the topology diagram</p>
+                </div>
+            </div>
+
+            <div id="valueStreamsView" class="view-container">
+                <div class="value-streams-header">
+                    <h2>Value Streams & Domain Boundaries</h2>
+                    <button id="addValueStreamBtn" class="btn btn-primary">
                         <span class="btn-icon">+</span>
-                        Add Team
-                    </button>
-                    <input type="file" id="importFile" accept=".team,.json" style="display: none;">
-                </div>
-
-                <div class="view-toggle">
-                    <button id="gridViewBtn" class="view-toggle-btn active">
-                        <span class="btn-icon">▦</span>
-                        Grid View
-                    </button>
-                    <button id="diagramViewBtn" class="view-toggle-btn">
-                        <span class="btn-icon">⚡</span>
-                        Topology View
-                    </button>
-                    <button id="valueStreamsViewBtn" class="view-toggle-btn">
-                        <span class="btn-icon">🎯</span>
-                        Value Streams
+                        Add Value Stream
                     </button>
                 </div>
-
-                <div id="gridView" class="view-container active">
-                    <div id="teamsGrid" class="teams-grid">
-                        <!-- Teams will be rendered here -->
-                    </div>
-
-                    <div id="emptyState" class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <h2>No teams yet</h2>
-                        <p>Create your first team to get started</p>
-                    </div>
+                <div class="value-stream-list" id="valueStreamList">
+                    <!-- Value streams will be rendered here -->
                 </div>
-
-                <div id="diagramView" class="view-container">
-                    <div class="diagram-controls">
-                        <button id="addInteractionBtn" class="btn btn-secondary btn-small">
-                            <span class="btn-icon">🔗</span>
-                            Add Interaction
-                        </button>
-                        <button id="autoLayoutBtn" class="btn btn-secondary btn-small">
-                            <span class="btn-icon">⚙️</span>
-                            Auto Layout
-                        </button>
-                    </div>
-                    <div id="topologyDiagram" class="topology-diagram">
-                        <svg id="diagramSvg" width="100%" height="600">
-                            <!-- Diagram will be rendered here -->
-                        </svg>
-                    </div>
-                    <div id="diagramEmptyState" class="empty-state">
-                        <div class="empty-state-icon">📊</div>
-                        <h2>No teams to visualize</h2>
-                        <p>Create teams to see them in the topology diagram</p>
-                    </div>
-                </div>
-
-                <div id="valueStreamsView" class="view-container">
-                    <div class="value-streams-header">
-                        <h2>Value Streams & Domain Boundaries</h2>
-                        <button id="addValueStreamBtn" class="btn btn-primary">
-                            <span class="btn-icon">+</span>
-                            Add Value Stream
-                        </button>
-                    </div>
-                    <div class="value-stream-list" id="valueStreamList">
-                        <!-- Value streams will be rendered here -->
-                    </div>
-                    <div id="valueStreamEmptyState" class="empty-state">
-                        <div class="empty-state-icon">🎯</div>
-                        <h2>No value streams yet</h2>
-                        <p>Create your first value stream to organize teams by domain boundaries</p>
-                    </div>
+                <div id="valueStreamEmptyState" class="empty-state">
+                    <div class="empty-state-icon">🎯</div>
+                    <h2>No value streams yet</h2>
+                    <p>Create your first value stream to organize teams by domain boundaries</p>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
     </div>
 
     <!-- Team Modal -->

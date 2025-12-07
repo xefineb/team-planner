@@ -158,6 +158,32 @@ class TeamPlanner {
             this.closeValueStreamFormModal();
         });
 
+        // Burger Menu Logic
+        const burgerBtn = document.getElementById('burgerBtn');
+        const burgerDropdown = document.getElementById('burgerDropdown');
+
+        if (burgerBtn && burgerDropdown) {
+            // Toggle menu
+            burgerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                burgerDropdown.classList.toggle('active');
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!burgerDropdown.contains(e.target) && !burgerBtn.contains(e.target)) {
+                    burgerDropdown.classList.remove('active');
+                }
+            });
+
+            // Close when clicking a menu item
+            burgerDropdown.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    burgerDropdown.classList.remove('active');
+                });
+            });
+        }
+
         // Icon preset selection
         document.querySelectorAll('.icon-preset').forEach(btn => {
             btn.addEventListener('click', (e) => {
