@@ -265,9 +265,46 @@ body {
 }
 
 .team-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--color-border-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Compact Team Card */
+.team-card-compact {
+    padding: var(--space-md);
+}
+
+.team-card-compact .team-card-header {
+    margin-bottom: var(--space-xs);
+}
+
+.team-card-compact .team-name {
+    font-size: var(--font-size-lg);
+}
+
+.team-card-compact .team-description {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.team-card-compact .value-stream-tags {
+    margin-bottom: var(--space-sm);
+}
+
+.team-role-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+}
+
+.role-count-item {
+    padding: 4px 8px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
 }
 
 .team-card-header {

@@ -12,6 +12,7 @@ class TeamPlanner {
         this.editingValueStreamId = null;
         this.editingInteractionIndex = null;
         this.currentView = 'grid';
+        this.compactView = false;
         this.draggedNode = null;
 
         this.init();
@@ -29,6 +30,11 @@ class TeamPlanner {
     // Event Listeners
     // ===================================
     setupEventListeners() {
+        // Compact View Toggle
+        document.getElementById('toggleCompactViewBtn').addEventListener('click', () => {
+            this.toggleCompactView();
+        });
+
         // View Toggle
         document.getElementById('gridViewBtn').addEventListener('click', () => {
             this.switchView('grid');
@@ -131,6 +137,11 @@ class TeamPlanner {
             if (e.target.id === 'interactionModal') {
                 this.closeInteractionModal();
             }
+        });
+
+        // Value Stream Management
+        document.getElementById('addValueStreamBtn').addEventListener('click', () => {
+            this.openValueStreamFormModal();
         });
 
         // Value Stream Form Modal
@@ -349,6 +360,39 @@ class TeamPlanner {
             'platform': 'Platform'
         };
 
+        // Render value stream tags
+        const valueStreamTags = this.renderValueStreamTags(team.valueStreams || []);
+
+        // Calculate role counts for compact view
+        const roleCounts = {};
+        team.members.forEach(member => {
+            roleCounts[member.role] = (roleCounts[member.role] || 0) + 1;
+        });
+
+        const roleCountsHtml = Object.keys(roleCounts).length > 0
+            ? `<div class="team-role-counts">
+                    ${Object.entries(roleCounts).map(([role, count]) =>
+                `<span class="role-count-item">${this.escapeHtml(role)}: ${count}</span>`
+            ).join('')}
+               </div>`
+            : '<div class="team-role-counts"><span class="role-count-item">No members</span></div>';
+
+        if (this.compactView) {
+            // Compact view: name, description, value streams, role counts only
+            return `
+                <div class="team-card team-card-compact" data-type="${team.type}" data-team-id="${team.id}">
+                    <div class="team-card-header">
+                        <h3 class="team-name">${this.escapeHtml(team.name)}</h3>
+                        <span class="team-type-badge">${typeLabels[team.type]}</span>
+                    </div>
+                    <p class="team-description">${this.escapeHtml(team.description || '')}</p>
+                    ${valueStreamTags}
+                    ${roleCountsHtml}
+                </div>
+            `;
+        }
+
+        // Full view: everything including member details and actions
         const membersHtml = team.members.length > 0
             ? `<div class="team-members">
                     <div class="team-members-title">Team Members</div>
@@ -366,9 +410,6 @@ class TeamPlanner {
                     </div>
                 </div>`
             : '';
-
-        // Render value stream tags
-        const valueStreamTags = this.renderValueStreamTags(team.valueStreams || []);
 
         return `
             <div class="team-card" data-type="${team.type}" data-team-id="${team.id}">
@@ -598,6 +639,21 @@ class TeamPlanner {
             document.getElementById('valueStreamsView').classList.add('active');
             this.renderValueStreams();
         }
+    }
+
+    toggleCompactView() {
+        this.compactView = !this.compactView;
+        const btn = document.getElementById('toggleCompactViewBtn');
+
+        if (this.compactView) {
+            btn.innerHTML = '<span class="btn-icon">▦</span> Full View';
+            btn.classList.add('active');
+        } else {
+            btn.innerHTML = '<span class="btn-icon">⊟</span> Compact View';
+            btn.classList.remove('active');
+        }
+
+        this.render();
     }
 
     // ===================================
