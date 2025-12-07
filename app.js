@@ -158,6 +158,14 @@ class TeamPlanner {
             this.closeValueStreamFormModal();
         });
 
+        // Icon preset selection
+        document.querySelectorAll('.icon-preset').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const icon = e.target.dataset.icon;
+                document.getElementById('valueStreamIcon').value = icon;
+            });
+        });
+
         // Close value stream form modal on backdrop click
         document.getElementById('valueStreamFormModal').addEventListener('click', (e) => {
             if (e.target.id === 'valueStreamFormModal') {
@@ -451,6 +459,7 @@ class TeamPlanner {
             .filter(vs => vs) // Filter out any that don't exist
             .map(vs => `
                 <span class="value-stream-tag">
+                    ${vs.icon ? `<span class="vs-icon">${vs.icon}</span>` : ''}
                     ${this.escapeHtml(vs.name)}
                 </span>
             `)
@@ -1180,6 +1189,7 @@ class TeamPlanner {
                 title.textContent = 'Edit Value Stream';
                 document.getElementById('valueStreamName').value = vs.name;
                 document.getElementById('valueStreamDescription').value = vs.description || '';
+                document.getElementById('valueStreamIcon').value = vs.icon || '';
             }
         } else {
             title.textContent = 'Add Value Stream';
@@ -1198,6 +1208,7 @@ class TeamPlanner {
     saveValueStream() {
         const name = document.getElementById('valueStreamName').value.trim();
         const description = document.getElementById('valueStreamDescription').value.trim();
+        const icon = document.getElementById('valueStreamIcon').value.trim();
 
         if (!name) {
             alert('Please enter a value stream name');
@@ -1210,13 +1221,15 @@ class TeamPlanner {
             if (vs) {
                 vs.name = name;
                 vs.description = description;
+                vs.icon = icon;
             }
         } else {
             // Create new
             this.valueStreams.push({
                 id: this.generateId(),
                 name,
-                description
+                description,
+                icon
             });
         }
 
@@ -1266,7 +1279,10 @@ class TeamPlanner {
         list.innerHTML = this.valueStreams.map(vs => `
             <div class="value-stream-item">
                 <div class="value-stream-info">
-                    <div class="value-stream-name">${this.escapeHtml(vs.name)}</div>
+                    <div class="value-stream-name">
+                        ${vs.icon ? `<span class="vs-icon" style="font-size: 18px; margin-right: 8px;">${vs.icon}</span>` : ''}
+                        ${this.escapeHtml(vs.name)}
+                    </div>
                     ${vs.description ? `<div class="value-stream-description">${this.escapeHtml(vs.description)}</div>` : ''}
                 </div>
                 <div class="value-stream-actions">

@@ -1261,6 +1261,39 @@ form {
     border-color: var(--color-border-light);
 }
 
+/* Icon Presets */
+.icon-presets {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+}
+
+.icon-preset {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-elevated);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-preset:hover {
+    transform: scale(1.1);
+    border-color: var(--color-primary);
+    background: var(--color-bg-card);
+}
+
+.vs-icon {
+    margin-right: 4px;
+    font-size: 14px;
+}
+
 /* Value Streams View */
 .value-streams-header {
     display: flex;
