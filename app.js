@@ -322,6 +322,7 @@ class TeamPlanner {
             team.members.push(member);
             this.saveToStorage();
             this.render();
+            this.renderDiagram(); // Update topology view
             this.closeMemberModal();
         }
     }
@@ -332,6 +333,7 @@ class TeamPlanner {
             team.members = team.members.filter(m => m.id !== memberId);
             this.saveToStorage();
             this.render();
+            this.renderDiagram(); // Update topology view
         }
     }
 
