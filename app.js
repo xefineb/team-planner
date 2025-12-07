@@ -394,6 +394,20 @@ class TeamPlanner {
             grid.innerHTML = this.teams.map(team => this.renderTeamCard(team)).join('');
             this.attachCardEventListeners();
         }
+
+        // Re-attach empty state button listener to be safe
+        const emptyStateAddTeamBtn = document.getElementById('emptyStateAddTeamBtn');
+        if (emptyStateAddTeamBtn) {
+            // Clone node to remove old listeners to prevent duplicates
+            const newBtn = emptyStateAddTeamBtn.cloneNode(true);
+            emptyStateAddTeamBtn.parentNode.replaceChild(newBtn, emptyStateAddTeamBtn);
+
+            newBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Empty state add team clicked');
+                this.openTeamModal();
+            });
+        }
     }
 
     renderTeamCard(team) {
