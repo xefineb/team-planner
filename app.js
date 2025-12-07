@@ -778,7 +778,11 @@ class TeamPlanner {
         const headerHeight = 50;
         const roleHeight = 20;
         const padding = 10;
-        const vsHeight = teamValueStreams.length > 0 ? 25 : 0; // Space for value stream indicators
+
+        // Only reserve space if there are icons to show
+        const hasIcons = teamValueStreams.some(vs => vs.icon);
+        const vsHeight = hasIcons ? 35 : 5; // 35px if icons, 5px buffer if not
+
         const totalHeight = headerHeight + (roles.length > 0 ? roles.length * roleHeight + padding : 20) + vsHeight;
 
         // Background rectangle
@@ -859,28 +863,36 @@ class TeamPlanner {
             g.appendChild(noMembersText);
         }
 
-        // Value stream indicators (icons instead of circles)
-        if (team.valueStreams && team.valueStreams.length > 0) {
-            const validStreams = team.valueStreams
-                .map(vsId => this.valueStreams.find(vs => vs.id === vsId))
-                .filter(vs => vs && vs.icon); // Only show if icon exists
+        // Value stream indicators (icons at bottom of box)
+        if (hasIcons) {
+            const validStreams = teamValueStreams.filter(vs => vs && vs.icon);
 
-            validStreams.forEach((vs, index) => {
-                const iconText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                iconText.setAttribute('x', -90 + (index * 25));
-                iconText.setAttribute('y', 55);
-                iconText.setAttribute('font-size', '18');
-                iconText.setAttribute('text-anchor', 'middle');
-                iconText.textContent = vs.icon;
-                iconText.style.cursor = 'default';
+            if (validStreams.length > 0) {
+                const iconSpacing = 24;
+                const totalIconWidth = validStreams.length * iconSpacing;
+                const startX = -totalIconWidth / 2 + iconSpacing / 2;
+                // Position in the center of the bottom vsHeight area
+                // Bottom of box is totalHeight/2. Center of vs area is totalHeight/2 - (vsHeight/2)
+                const yPos = totalHeight / 2 - (vsHeight / 2) + 2;
 
-                // Tooltip
-                const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-                title.textContent = vs.name;
-                iconText.appendChild(title);
+                validStreams.forEach((vs, index) => {
+                    const iconText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    iconText.setAttribute('x', startX + (index * iconSpacing));
+                    iconText.setAttribute('y', yPos);
+                    iconText.setAttribute('font-size', '18');
+                    iconText.setAttribute('text-anchor', 'middle');
+                    iconText.setAttribute('dominant-baseline', 'central'); // Center vertically
+                    iconText.textContent = vs.icon;
+                    iconText.style.cursor = 'default';
 
-                g.appendChild(iconText);
-            });
+                    // Tooltip
+                    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                    title.textContent = vs.name;
+                    iconText.appendChild(title);
+
+                    g.appendChild(iconText);
+                });
+            }
         }
 
         // Add drag behavior
